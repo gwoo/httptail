@@ -8,8 +8,8 @@ Uses server sent events to keep the connection alive and stream the output of th
 In a browser, access "http://host:port/file.log" and wait for each line to be printed as it is written to the log.
 
 	Usage of ./httptail:
-	  -addr=":2222": Addr for server
-	  -creds="admin:password": Authentication credentials.
+	  -addr=":2280": Addr for server
+	  -creds="admin:password": Optional authentication credentials.
 	  -dir="/var/log": Base directory where logs are found.
 
 
