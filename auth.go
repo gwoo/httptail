@@ -22,12 +22,16 @@ func (a Auth) NotAuthorized(url string, w http.ResponseWriter) {
 	fmt.Fprintf(w, "Not Authorized.")
 }
 
-func AuthHandler(auth Auth, handler http.Handler) http.Handler {
+func (a Auth) Handler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if a.Creds == "" {
+			handler.ServeHTTP(w, r)
+			return
+		}
 		url := r.URL
 		header, ok := r.Header["Authorization"]
 		if !ok {
-			auth.NotAuthorized(url.String(), w)
+			a.NotAuthorized(url.String(), w)
 			return
 		}
 		encoded := strings.Split(header[0], " ")
@@ -42,11 +46,11 @@ func AuthHandler(auth Auth, handler http.Handler) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if auth.Creds == string(decoded) {
+		if a.Creds == string(decoded) {
 			handler.ServeHTTP(w, r)
 			return
 		}
-		auth.NotAuthorized(url.String(), w)
+		a.NotAuthorized(url.String(), w)
 		return
 	})
 }

@@ -13,15 +13,13 @@ import (
 )
 
 func main() {
-	addr := flag.String("addr", ":2222", "Addr for server")
+	addr := flag.String("addr", ":2280", "Addr for server")
 	creds := flag.String("creds", "admin:password", "Authentication credentials.")
 	dir := flag.String("dir", "/var/log", "Base directory where logs are found.")
 	flag.Parse()
 	http.HandleFunc("/favicon.ico", http.NotFound)
-	http.Handle("/", AuthHandler(
-		Auth{"httptail", *creds},
-		TailHandler(
-			*dir, NewBroker())))
+	auth := Auth{"httptail", *creds}
+	http.Handle("/", auth.Handler(TailHandler(*dir, NewBroker())))
 
 	// Find some certs
 	_, cerr := os.Open("cert.pem")
