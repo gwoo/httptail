@@ -42,19 +42,20 @@ func TailHandler(directory string, broker *Broker) http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		go tail(fmt.Sprint(directory, "/", r.RequestURI[1:]), broker)
+		file, err := os.Open(fmt.Sprint(directory, "/", r.RequestURI[1:]))
+		if err != nil {
+			http.NotFound(w, r)
+			log.Println(err)
+			return
+		}
+		go tail(file, broker)
 		broker.ServeHTTP(w, r)
 	})
 }
 
 // Tail the file and send messages to Broker
-func tail(filename string, broker *Broker) {
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	_, err = file.Seek(0, os.SEEK_END)
+func tail(file *os.File, broker *Broker) {
+	_, err := file.Seek(0, os.SEEK_END)
 	if err != nil {
 		log.Println(err)
 		return
