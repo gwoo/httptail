@@ -60,6 +60,7 @@ func tail(file *os.File, broker *Broker) {
 		log.Println(err)
 		return
 	}
+	broker.Event <- []byte(fmt.Sprintf("Reading %s\n", file.Name()))
 	reader := bufio.NewReader(file)
 	i := 0
 	for {
@@ -70,14 +71,16 @@ func tail(file *os.File, broker *Broker) {
 			broker.Event <- []byte(" ")
 		}
 		i = len(broker.clients)
-		message, err := reader.ReadBytes('\n')
-		if err == nil {
-			broker.Event <- message
-			continue
-		}
-		if err.Error() != "EOF" {
-			broker.Event <- []byte(err.Error())
-			return
+		for {
+			message, err := reader.ReadBytes('\n')
+			if err == nil {
+				broker.Event <- message
+				continue
+			}
+			if err.Error() != "EOF" {
+				broker.Event <- []byte(err.Error())
+				return
+			}
 		}
 		time.Sleep(time.Second * 1)
 	}
